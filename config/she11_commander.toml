@@ -1,0 +1,75 @@
+# =============================================================================
+# she11_commander.toml - operator console configuration
+# -----------------------------------------------------------------------------
+# Source template : config/she11_commander.toml
+# Copied next to the commander binary by:
+#     python builder.py commander --gen-config
+#
+# The commander reads it at startup:
+#     ./she11_commander -c she11_commander.toml
+# or ./she11_commander when ./she11_commander.toml exists in the working
+# directory.
+#
+# PLACEHOLDERS: the relay address and the password below are not real. A
+# commander started from this file as-is cannot authenticate anywhere. Edit
+# them before use.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# GENERAL
+# -----------------------------------------------------------------------------
+[general]
+# Shell used by exec and start_shell when the caller does not pass shell_type:
+#   default | pwsh | powershell | cmd | fish | zsh | bash | sh
+# "default" asks each client for its own best shell.
+shell_type = "default"
+
+# auto = QUIC first, then TLS/TCP; force one transport with "udp" or "tcp".
+transport  = "auto"
+
+# Per-operation timeout in seconds: dial, handshake, roster query, OPEN,
+# shell_close. It is not a total deadline for a long-running command; exec has
+# its own timeout_ms argument.
+timeout    = 10
+
+# Default output mode for the CLI; --json overrides it per call.
+json       = false
+
+# -----------------------------------------------------------------------------
+# RELAYS
+# addr points at the relay's COMMANDER plane (2079/2080 in the shipped
+# examples), never at the client plane.
+#
+# Multiple entries are merged into one deduplicated roster. They are tried in
+# configuration order; latency ranking is intentionally not used. A command
+# that was already submitted is never replayed on another relay, because the
+# outcome would be unknown.
+# -----------------------------------------------------------------------------
+[[server]]
+name     = "relay-1"
+# ".invalid" is a reserved TLD that never resolves: replace with the real relay
+# hostname or IP, e.g. "relay.example.com:2079".
+addr     = "relay.invalid:2079"
+# Must equal the relay's auth.commander_password.
+password = "CHANGE-ME-commander-password"
+
+# Add more relays the same way:
+# [[server]]
+# name     = "relay-2"
+# addr     = "relay-2.invalid:2079"
+# password = "CHANGE-ME-commander-password"
+
+# -----------------------------------------------------------------------------
+# MCP - how AI clients reach this commander.
+#
+#   off   : plain CLI only.
+#   stdio : zero-port JSON-RPC over stdin/stdout; recommended for a local AI.
+#           No token is used.
+#   http  : plain HTTP POST /mcp on the loopback address below. Requires the
+#           token to be non-empty unless you really want an unauthenticated
+#           endpoint; never expose it to the network without TLS in front.
+# -----------------------------------------------------------------------------
+[mcp]
+mode   = "off"
+listen = "127.0.0.1:8899"     # http mode only
+token  = ""                   # http mode only; empty means no authentication
