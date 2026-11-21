@@ -6,6 +6,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"she11/src/shared/configpath"
 )
 
 const usage = `she11_server — public relay: client registry + auth + byte splicing
@@ -110,13 +112,16 @@ func ParseCLI(args []string) (*Config, error) {
 		}
 		return cfg, nil
 	}
-	// Portable default: ./she11_server.toml if present.
-	if _, err := os.Stat("she11_server.toml"); err == nil && fs.NFlag() == 0 {
-		cfg, err := LoadTOML("she11_server.toml")
-		if err != nil {
-			return nil, err
+	// Portable default: she11_server.toml next to the binary, or in the
+	// working directory as a legacy fallback.
+	if fs.NFlag() == 0 {
+		if p := configpath.DefaultTOML("she11_server.toml"); p != "" {
+			cfg, err := LoadTOML(p)
+			if err != nil {
+				return nil, err
+			}
+			return cfg, nil
 		}
-		return cfg, nil
 	}
 
 	// Pure parameter mode.

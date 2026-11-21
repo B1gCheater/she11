@@ -3,9 +3,10 @@ package commander
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/BurntSushi/toml"
+
+	"she11/src/shared/configpath"
 )
 
 // ServerConf is one server entry in she11_commander.toml.
@@ -57,10 +58,8 @@ func LoadTOML(path string) (*Config, error) {
 	return &c, nil
 }
 
-// DefaultConfigPath returns ./she11_commander.toml if it exists.
+// DefaultConfigPath returns she11_commander.toml next to the binary, or in
+// the working directory as a legacy fallback. Empty when neither exists.
 func DefaultConfigPath() string {
-	if _, err := os.Stat("she11_commander.toml"); err == nil {
-		return "she11_commander.toml"
-	}
-	return ""
+	return configpath.DefaultTOML("she11_commander.toml")
 }
